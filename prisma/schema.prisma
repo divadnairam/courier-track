@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("CLIENT") // ADMIN | OPERATOR | COURIER | CLIENT
+  phone        String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedTrips Trip[]                @relation("TripDriver")
+  statusUpdates ParcelStatusHistory[]
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  type        String   @default("INDIVIDUAL") // INDIVIDUAL | COMPANY
+  name        String
+  companyName String?
+  cui         String? // Company fiscal code
+  phone       String
+  email       String?
+  address     String
+  city        String
+  county      String
+  country     String   @default("RO")
+  notes       String?
+  userId      String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sentParcels     Parcel[] @relation("Sender")
+  receivedParcels Parcel[] @relation("Receiver")
+}
+
+model Parcel {
+  id             String  @id @default(cuid())
+  awb            String  @unique
+  status         String  @default("PRELUAT") // PRELUAT | IN_TRANZIT | IN_LIVRARE | LIVRAT | RETURNAT
+  senderId       String
+  sender         Client  @relation("Sender", fields: [senderId], references: [id])
+  receiverId     String
+  receiver       Client  @relation("Receiver", fields: [receiverId], references: [id])
+  weight         Float?
+  width          Float?
+  height         Float?
+  length         Float?
+  declaredValue  Float?
+  cashOnDelivery Float?
+  content        String?
+  notes          String?
+  pickupAddress   String
+  pickupCity      String
+  pickupCountry   String  @default("RO")
+  deliveryAddress String
+  deliveryCity    String
+  deliveryCountry String  @default("RO")
+  price          Float   @default(0)
+  tripId         String?
+  trip           Trip?   @relation(fields: [tripId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  statusHistory ParcelStatusHistory[]
+}
+
+model ParcelStatusHistory {
+  id        String   @id @default(cuid())
+  parcelId  String
+  parcel    Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+  status    String
+  location  String?
+  notes     String?
+  updatedBy String?
+  user      User?    @relation(fields: [updatedBy], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Trip {
+  id              String    @id @default(cuid())
+  status          String    @default("PROGRAMAT") // PROGRAMAT | IN_DESFASURARE | FINALIZAT
+  originCity        String
+  originCountry     String  @default("RO")
+  destinationCity   String
+  destinationCountry String @default("RO")
+  route           String?
+  departureDate   DateTime
+  departureTime   String
+  estimatedArrival DateTime?
+  totalSeats      Int       @default(0)
+  availableSeats  Int       @default(0)
+  driverId        String?
+  driver          User?     @relation("TripDriver", fields: [driverId], references: [id])
+  vehicleInfo     String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  parcels    Parcel[]
+  passengers Passenger[]
+}
+
+model Passenger {
+  id        String   @id @default(cuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String
+  seatCount Int      @default(1)
+  notes     String?
+  price     Float    @default(0)
+  createdAt DateTime @default(now())
+}
