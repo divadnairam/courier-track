@@ -72,11 +72,26 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "OPERATOR"].includes(session.user.role)) {
+  if (!session || !["ADMIN", "OPERATOR", "CLIENT"].includes(session.user.role)) {
     return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
   }
 
   const body = await req.json();
+
+  // For CLIENT users, force senderId to their linked client profile
+  if (session.user.role === "CLIENT") {
+    const client = await prisma.client.findUnique({
+      where: { userId: session.user.id },
+    });
+    if (!client) {
+      return NextResponse.json(
+        { error: "Nu aveți un profil de client asociat. Contactați administratorul." },
+        { status: 400 }
+      );
+    }
+    body.senderId = client.id;
+  }
+
   const result = parcelSchema.safeParse(body);
 
   if (!result.success) {

@@ -79,7 +79,7 @@ export default async function ColetePage({
   ]);
 
   const totalPages = Math.ceil(total / limit);
-  const canCreate = ["ADMIN", "OPERATOR"].includes(session?.user.role || "");
+  const canCreate = ["ADMIN", "OPERATOR", "CLIENT"].includes(session?.user.role || "");
 
   return (
     <div>

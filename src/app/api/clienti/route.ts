@@ -6,7 +6,7 @@ import { clientSchema } from "@/lib/validators";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "OPERATOR"].includes(session.user.role)) {
+  if (!session || !["ADMIN", "OPERATOR", "CLIENT"].includes(session.user.role)) {
     return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
   }
 
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "OPERATOR"].includes(session.user.role)) {
+  if (!session || !["ADMIN", "OPERATOR", "CLIENT"].includes(session.user.role)) {
     return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
   }
 

@@ -40,14 +40,17 @@ interface ParcelFormProps {
     deliveryCountry?: string;
     price: number;
   };
+  userRole?: string;
+  userClientId?: string;
 }
 
-export function ParcelForm({ initialData }: ParcelFormProps) {
+export function ParcelForm({ initialData, userRole, userClientId }: ParcelFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [clients, setClients] = useState<Client[]>([]);
-  const [senderId, setSenderId] = useState(initialData?.senderId || "");
+  const isClient = userRole === "CLIENT";
+  const [senderId, setSenderId] = useState(initialData?.senderId || userClientId || "");
   const [receiverId, setReceiverId] = useState(initialData?.receiverId || "");
   const [showNewSender, setShowNewSender] = useState(false);
   const [showNewReceiver, setShowNewReceiver] = useState(false);
@@ -61,6 +64,24 @@ export function ParcelForm({ initialData }: ParcelFormProps) {
   useEffect(() => {
     loadClients();
   }, []);
+
+  // Auto-fill pickup address for CLIENT users once clients are loaded
+  useEffect(() => {
+    if (isClient && userClientId && clients.length > 0 && !initialData?.id) {
+      const client = clients.find((c) => c.id === userClientId);
+      if (client) {
+        const form = document.getElementById("parcel-form") as HTMLFormElement;
+        if (form) {
+          const pickupAddress = form.elements.namedItem("pickupAddress") as HTMLInputElement;
+          const pickupCity = form.elements.namedItem("pickupCity") as HTMLInputElement;
+          const pickupCountry = form.elements.namedItem("pickupCountry") as HTMLSelectElement;
+          if (pickupAddress && !pickupAddress.value) pickupAddress.value = client.address;
+          if (pickupCity && !pickupCity.value) pickupCity.value = client.city;
+          if (pickupCountry) pickupCountry.value = client.country || "RO";
+        }
+      }
+    }
+  }, [isClient, userClientId, clients, initialData?.id]);
 
   function onSenderChange(clientId: string) {
     setSenderId(clientId);
@@ -182,7 +203,7 @@ export function ParcelForm({ initialData }: ParcelFormProps) {
       <div className="rounded-lg border p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm">Expeditor</h3>
-          {!showNewSender && (
+          {!isClient && !showNewSender && (
             <button
               type="button"
               onClick={() => setShowNewSender(true)}
@@ -193,7 +214,15 @@ export function ParcelForm({ initialData }: ParcelFormProps) {
           )}
         </div>
 
-        {showNewSender ? (
+        {isClient ? (
+          <div>
+            <input type="hidden" name="senderId" value={senderId} />
+            <div className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {clients.find((c) => c.id === userClientId)?.name || "Contul tău"}
+              <span className="text-xs text-gray-400 ml-2">(expeditor automat)</span>
+            </div>
+          </div>
+        ) : showNewSender ? (
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Expeditor nou</span>
