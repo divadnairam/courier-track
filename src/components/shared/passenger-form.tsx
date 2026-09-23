@@ -17,7 +17,8 @@ export function PassengerForm({ tripId }: { tripId: string }) {
     setLoading(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const data = {
       name: formData.get("name") as string,
       phone: formData.get("phone") as string,
@@ -38,7 +39,7 @@ export function PassengerForm({ tripId }: { tripId: string }) {
         throw new Error(err.error || "Eroare la salvare");
       }
 
-      e.currentTarget.reset();
+      form.reset();
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Eroare");
