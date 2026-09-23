@@ -61,7 +61,7 @@ async function main() {
   // Create demo clients
   const client1 = await prisma.client.upsert({
     where: { id: "demo-client-1" },
-    update: {},
+    update: { userId: clientUser.id },
     create: {
       id: "demo-client-1",
       type: "INDIVIDUAL",
