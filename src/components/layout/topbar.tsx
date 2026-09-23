@@ -1,7 +1,6 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
 import { LogOut, Menu, Package } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,8 +10,13 @@ import Link from "next/link";
 export function Topbar() {
   const { data: session } = useSession();
 
+  async function handleLogout() {
+    await signOut({ redirect: false });
+    window.location.href = "/";
+  }
+
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-white/10 bg-blue-900 px-4 md:px-6">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-white/10 bg-blue-900 px-4 md:px-6">
       <Sheet>
         <SheetTrigger className="md:hidden inline-flex items-center justify-center rounded-lg h-8 w-8 text-blue-100 hover:bg-white/10">
           <Menu className="h-5 w-5" />
@@ -37,14 +41,13 @@ export function Topbar() {
               {ROLE_LABELS[session.user.role as Role] || session.user.role}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-100 hover:bg-white/10 hover:text-white"
-            onClick={() => signOut({ callbackUrl: "/" })}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="relative z-50 inline-flex items-center justify-center rounded-lg p-2 text-blue-100 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
           >
             <LogOut className="h-5 w-5" />
-          </Button>
+          </button>
         </div>
       )}
     </header>
