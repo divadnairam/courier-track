@@ -11,6 +11,8 @@ export async function POST(
   const awbUpper = awb.trim().toUpperCase();
   const body = await req.json().catch(() => ({}));
   const location = body.location || "";
+  const latitude = body.latitude != null ? Number(body.latitude) : null;
+  const longitude = body.longitude != null ? Number(body.longitude) : null;
 
   const parcel = await prisma.parcel.findUnique({
     where: { awb: awbUpper },
@@ -39,13 +41,15 @@ export async function POST(
   const nextStatus = PARCEL_STATUS_FLOW[currentIndex + 1];
 
   const updated = await prisma.parcel.update({
-    where: { awb },
+    where: { awb: awbUpper },
     data: {
       status: nextStatus,
       statusHistory: {
         create: {
           status: nextStatus,
           location,
+          latitude,
+          longitude,
           notes: `Status actualizat automat prin scanare QR`,
         },
       },

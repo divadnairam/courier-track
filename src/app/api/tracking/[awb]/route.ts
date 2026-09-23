@@ -23,6 +23,8 @@ export async function GET(
         select: {
           status: true,
           location: true,
+          latitude: true,
+          longitude: true,
           notes: true,
           createdAt: true,
         },

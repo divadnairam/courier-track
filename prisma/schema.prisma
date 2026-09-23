@@ -80,6 +80,8 @@ model ParcelStatusHistory {
   parcel    Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
   status    String
   location  String?
+  latitude  Float?
+  longitude Float?
   notes     String?
   updatedBy String?
   user      User?    @relation(fields: [updatedBy], references: [id])

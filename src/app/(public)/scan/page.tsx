@@ -28,6 +28,7 @@ function ScanContent() {
     alreadyCompleted?: boolean;
   } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const scannerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +38,16 @@ function ScanContent() {
     const awbParam = searchParams.get("awb");
     if (awbParam) setAwb(awbParam);
   }, [searchParams]);
+
+  // Capture GPS location automatically
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        () => {} // ignore errors - GPS is optional
+      );
+    }
+  }, []);
 
   const stopCamera = useCallback(async () => {
     try {
@@ -116,11 +127,29 @@ function ScanContent() {
     setLoading(true);
     setResult(null);
 
+    // Get fresh GPS coordinates at scan time
+    let gpsCoords = coords;
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+        );
+        gpsCoords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        setCoords(gpsCoords);
+      } catch {
+        // GPS unavailable - continue without it
+      }
+    }
+
     try {
       const res = await fetch(`/api/scan/${encodeURIComponent(awb.trim())}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ location: location.trim() }),
+        body: JSON.stringify({
+          location: location.trim(),
+          latitude: gpsCoords?.latitude ?? null,
+          longitude: gpsCoords?.longitude ?? null,
+        }),
       });
 
       const data = await res.json();

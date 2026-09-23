@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ParcelStatusBadge } from "@/components/shared/status-badge";
 import { StatusTimeline } from "@/components/shared/status-timeline";
+import { ParcelMap } from "@/components/shared/parcel-map";
 import { Package, Search, ArrowLeft, LayoutDashboard } from "lucide-react";
 import { Suspense } from "react";
 import { useSession } from "next-auth/react";
@@ -138,6 +139,25 @@ function TrackingContent() {
                     <p className="text-sm text-gray-600">{parcel.deliveryCity as string}</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Localizare Colet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ParcelMap
+                  entries={
+                    parcel.statusHistory as {
+                      status: string;
+                      location?: string | null;
+                      latitude?: number | null;
+                      longitude?: number | null;
+                      createdAt: string | Date;
+                    }[]
+                  }
+                />
               </CardContent>
             </Card>
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ParcelStatusBadge } from "@/components/shared/status-badge";
 import { StatusTimeline } from "@/components/shared/status-timeline";
+import { ParcelMap } from "@/components/shared/parcel-map";
 import { Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 
@@ -98,6 +99,21 @@ function TrackingContent() {
                 <p className="text-sm text-gray-600">{parcel.deliveryCity as string}</p>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-lg border bg-white p-6">
+            <h2 className="text-lg font-semibold mb-4">Localizare Colet</h2>
+            <ParcelMap
+              entries={
+                parcel.statusHistory as {
+                  status: string;
+                  location?: string | null;
+                  latitude?: number | null;
+                  longitude?: number | null;
+                  createdAt: string | Date;
+                }[]
+              }
+            />
           </div>
 
           <div className="rounded-lg border bg-white p-6">
