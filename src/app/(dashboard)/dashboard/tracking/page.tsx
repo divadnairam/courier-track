@@ -104,6 +104,7 @@ function TrackingContent() {
           <div className="rounded-lg border bg-white p-6">
             <h2 className="text-lg font-semibold mb-4">Localizare Colet</h2>
             <ParcelMap
+              awb={parcel.awb as string}
               entries={
                 parcel.statusHistory as {
                   status: string;

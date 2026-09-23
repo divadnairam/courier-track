@@ -108,8 +108,22 @@ model Trip {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  parcels    Parcel[]
-  passengers Passenger[]
+  parcels         Parcel[]
+  passengers      Passenger[]
+  courierLocation CourierLocation?
+}
+
+model CourierLocation {
+  id        String   @id @default(cuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  latitude  Float
+  longitude Float
+  speed     Float?
+  heading   Float?
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([tripId])
 }
 
 model Passenger {

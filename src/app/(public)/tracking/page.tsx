@@ -148,6 +148,7 @@ function TrackingContent() {
               </CardHeader>
               <CardContent>
                 <ParcelMap
+                  awb={parcel.awb as string}
                   entries={
                     parcel.statusHistory as {
                       status: string;

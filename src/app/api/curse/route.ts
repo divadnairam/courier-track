@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "20");
 
   const where: Record<string, unknown> = {};
-  if (status) where.status = status;
+  if (status === "active") {
+    where.status = { in: ["PROGRAMAT", "IN_DESFASURARE"] };
+  } else if (status) {
+    where.status = status;
+  }
   if (session.user.role === "COURIER") {
     where.driverId = session.user.id;
   }

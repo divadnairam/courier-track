@@ -18,18 +18,58 @@ interface MapEntry {
   createdAt: string | Date;
 }
 
-export function ParcelMap({ entries }: { entries: MapEntry[] }) {
+interface LivePosition {
+  latitude: number;
+  longitude: number;
+  updatedAt: string;
+}
+
+export function ParcelMap({
+  entries,
+  awb,
+}: {
+  entries: MapEntry[];
+  awb?: string;
+}) {
   const [mounted, setMounted] = useState(false);
+  const [livePos, setLivePos] = useState<LivePosition | null>(null);
 
   const points = entries.filter((e) => e.latitude && e.longitude);
 
+  // Poll for live courier position
   useEffect(() => {
-    if (points.length > 0) {
-      setMounted(true);
-    }
-  }, [points.length]);
+    if (!awb) return;
 
-  if (points.length === 0) {
+    let active = true;
+    async function poll() {
+      try {
+        const res = await fetch(`/api/tracking/${awb}/live`);
+        const data = await res.json();
+        if (active && data.live) {
+          setLivePos(data);
+        } else if (active) {
+          setLivePos(null);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    poll();
+    const interval = setInterval(poll, 15000); // poll every 15 seconds
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [awb]);
+
+  const hasData = points.length > 0 || livePos;
+
+  useEffect(() => {
+    if (hasData) setMounted(true);
+  }, [hasData]);
+
+  if (!hasData) {
     return (
       <div className="rounded-lg border bg-gray-50 p-6 text-center text-sm text-gray-500">
         Nu sunt disponibile date de localizare GPS pentru acest colet.
@@ -39,10 +79,10 @@ export function ParcelMap({ entries }: { entries: MapEntry[] }) {
 
   if (!mounted) return null;
 
-  return <MapInner points={points} />;
+  return <MapInner points={points} livePos={livePos} />;
 }
 
-function MapInner({ points }: { points: MapEntry[] }) {
+function MapInner({ points, livePos }: { points: MapEntry[]; livePos: LivePosition | null }) {
   const [MapComponents, setMapComponents] = useState<{
     MapContainer: typeof import("react-leaflet").MapContainer;
     TileLayer: typeof import("react-leaflet").TileLayer;
@@ -91,8 +131,13 @@ function MapInner({ points }: { points: MapEntry[] }) {
 
   const positions = points.map((p) => [p.latitude!, p.longitude!] as [number, number]);
 
+  // Add live position to bounds calculation
+  const allPositions = livePos
+    ? [...positions, [livePos.latitude, livePos.longitude] as [number, number]]
+    : positions;
+
   // Calculate bounds
-  const bounds = L.latLngBounds(positions);
+  const bounds = L.latLngBounds(allPositions.length > 0 ? allPositions : [[45.9, 25.0]]);
 
   // Color markers by status
   const statusColors: Record<string, string> = {
@@ -160,8 +205,54 @@ function MapInner({ points }: { points: MapEntry[] }) {
               </Popup>
             </Marker>
           ))}
+          {livePos && (
+            <Marker
+              position={[livePos.latitude, livePos.longitude]}
+              icon={L.divIcon({
+                className: "",
+                html: `<div style="position:relative">
+                  <div style="
+                    background: #ef4444;
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 8px rgba(239,68,68,0.5);
+                  "></div>
+                  <div style="
+                    position: absolute;
+                    inset: -6px;
+                    border-radius: 50%;
+                    border: 2px solid #ef4444;
+                    animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;
+                    opacity: 0.5;
+                  "></div>
+                </div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+              })}
+            >
+              <Popup>
+                <div className="text-sm">
+                  <p className="font-semibold text-red-600">Curier - Poziție Live</p>
+                  <p className="text-gray-400 text-xs">
+                    Actualizat: {new Date(livePos.updatedAt).toLocaleString("ro-RO")}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
         </MapContainer>
       </div>
+      {livePos && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-green-600">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          Tracking live activ — se actualizează automat
+        </div>
+      )}
     </>
   );
 }
