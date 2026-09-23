@@ -6,9 +6,10 @@ export async function GET(
   { params }: { params: Promise<{ awb: string }> }
 ) {
   const { awb } = await params;
+  const awbUpper = awb.trim().toUpperCase();
 
   const parcel = await prisma.parcel.findUnique({
-    where: { awb },
+    where: { awb: awbUpper },
     select: {
       awb: true,
       status: true,

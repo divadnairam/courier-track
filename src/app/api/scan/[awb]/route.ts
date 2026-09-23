@@ -8,11 +8,12 @@ export async function POST(
   { params }: { params: Promise<{ awb: string }> }
 ) {
   const { awb } = await params;
+  const awbUpper = awb.trim().toUpperCase();
   const body = await req.json().catch(() => ({}));
   const location = body.location || "";
 
   const parcel = await prisma.parcel.findUnique({
-    where: { awb },
+    where: { awb: awbUpper },
     include: {
       sender: { select: { name: true, email: true } },
       receiver: { select: { name: true, email: true } },
