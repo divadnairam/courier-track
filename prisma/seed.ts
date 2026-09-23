@@ -45,6 +45,19 @@ async function main() {
     },
   });
 
+  // Create client user
+  const clientUser = await prisma.user.upsert({
+    where: { email: "client@couriertrack.ro" },
+    update: {},
+    create: {
+      name: "Andrei Gheorghe",
+      email: "client@couriertrack.ro",
+      passwordHash: await bcrypt.hash("client123", 10),
+      role: "CLIENT",
+      phone: "0733333333",
+    },
+  });
+
   // Create demo clients
   const client1 = await prisma.client.upsert({
     where: { id: "demo-client-1" },
@@ -58,6 +71,7 @@ async function main() {
       address: "Str. Victoriei nr. 10",
       city: "București",
       county: "București",
+      userId: clientUser.id,
     },
   });
 
@@ -201,6 +215,7 @@ async function main() {
   console.log("  Admin:    admin@couriertrack.ro / admin123");
   console.log("  Operator: operator@couriertrack.ro / operator123");
   console.log("  Curier:   curier@couriertrack.ro / curier123");
+  console.log("  Client:   client@couriertrack.ro / client123");
 }
 
 main()
