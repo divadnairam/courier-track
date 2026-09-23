@@ -14,6 +14,7 @@ import {
   Search,
   Archive,
   Radio,
+  UserCircle,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -26,6 +27,7 @@ const iconMap: Record<string, React.ElementType> = {
   Search,
   Archive,
   Radio,
+  UserCircle,
 };
 
 const navItems = [
@@ -37,6 +39,7 @@ const navItems = [
   { href: "/dashboard/clienti", label: "Clienți", icon: "Users", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/rapoarte", label: "Rapoarte", icon: "BarChart3", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/tracking", label: "Urmărire AWB", icon: "Search", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
+  { href: "/dashboard/profil", label: "Profilul Meu", icon: "UserCircle", roles: ["CLIENT"] },
   { href: "/dashboard/setari/utilizatori", label: "Utilizatori", icon: "Settings", roles: ["ADMIN"] },
 ];
 
