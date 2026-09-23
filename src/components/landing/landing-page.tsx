@@ -473,7 +473,7 @@ export function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} CourierTrack. Toate drepturile rezervate.
+            © {new Date().getFullYear()} CourierTrack. Realizat de LunamerMMG. Toate drepturile rezervate.
           </div>
         </div>
       </footer>

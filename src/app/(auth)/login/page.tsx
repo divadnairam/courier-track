@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Footer } from "@/components/shared/footer";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,9 +41,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950">
+      <div className="flex-1 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="mb-4 inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <Link href="/" className="mb-4 inline-flex items-center gap-2 text-sm text-blue-200 hover:text-white transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Înapoi la pagina principală
         </Link>
@@ -100,6 +102,8 @@ export default function LoginPage() {
         </CardContent>
       </Card>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

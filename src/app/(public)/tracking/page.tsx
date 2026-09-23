@@ -11,6 +11,7 @@ import { Package, Search, ArrowLeft, LayoutDashboard } from "lucide-react";
 import { Suspense } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { Footer } from "@/components/shared/footer";
 
 function TrackingContent() {
   const searchParams = useSearchParams();
@@ -57,21 +58,23 @@ function TrackingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white py-8 px-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950">
+      <div className="bg-white/10 backdrop-blur-sm text-white py-8 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="flex justify-center mb-4">
+          <Link href="/" className="inline-flex justify-center mb-4 hover:opacity-80 transition-opacity">
             <Package className="h-10 w-10" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">CourierTrack</h1>
-          <p className="text-blue-100">Urmărește-ți coletul în timp real</p>
+          </Link>
+          <h1 className="text-3xl font-bold mb-2">
+            <Link href="/" className="hover:opacity-80 transition-opacity">CourierTrack</Link>
+          </h1>
+          <p className="text-blue-200">Urmărește-ți coletul în timp real</p>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 mt-4 flex gap-3">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-blue-200 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Pagina principală
@@ -79,7 +82,7 @@ function TrackingContent() {
         {isStaff && (
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-blue-200 hover:text-white transition-colors"
           >
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
@@ -106,7 +109,7 @@ function TrackingContent() {
         </Card>
 
         {error && searched && (
-          <Card className="mt-6">
+          <Card className="mt-6 shadow-lg">
             <CardContent className="pt-6 text-center text-red-600">
               {error}
             </CardContent>
@@ -158,6 +161,8 @@ function TrackingContent() {
           </div>
         )}
       </div>
+      <div className="flex-1" />
+      <Footer />
     </div>
   );
 }

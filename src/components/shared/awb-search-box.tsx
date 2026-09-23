@@ -12,7 +12,7 @@ export function AwbSearchBox() {
     e.preventDefault();
     const trimmed = awb.trim();
     if (trimmed) {
-      router.push(`/tracking?awb=${encodeURIComponent(trimmed)}`);
+      router.push(`/dashboard/tracking?awb=${encodeURIComponent(trimmed)}`);
     }
   }
 

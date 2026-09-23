@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Package, QrCode, MapPin, CheckCircle2, AlertCircle, ArrowLeft, Camera, X } from "lucide-react";
 import Link from "next/link";
+import { Footer } from "@/components/shared/footer";
 
 const STATUS_LABELS: Record<string, string> = {
   PRELUAT: "Preluat",
@@ -13,7 +14,7 @@ const STATUS_LABELS: Record<string, string> = {
   RETURNAT: "Returnat",
 };
 
-export default function ScanPage() {
+function ScanContent() {
   const searchParams = useSearchParams();
   const [awb, setAwb] = useState("");
   const [location, setLocation] = useState("");
@@ -151,7 +152,8 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950">
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <Link
           href="/"
@@ -315,6 +317,16 @@ export default function ScanPage() {
           )}
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense>
+      <ScanContent />
+    </Suspense>
   );
 }

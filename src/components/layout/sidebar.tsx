@@ -33,7 +33,7 @@ const navItems = [
   { href: "/dashboard/curse", label: "Curse", icon: "Truck", roles: ["ADMIN", "OPERATOR", "COURIER"] },
   { href: "/dashboard/clienti", label: "Clienți", icon: "Users", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/rapoarte", label: "Rapoarte", icon: "BarChart3", roles: ["ADMIN", "OPERATOR"] },
-  { href: "/tracking", label: "Urmărire AWB", icon: "Search", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
+  { href: "/dashboard/tracking", label: "Urmărire AWB", icon: "Search", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
   { href: "/dashboard/setari/utilizatori", label: "Utilizatori", icon: "Settings", roles: ["ADMIN"] },
 ];
 
@@ -47,11 +47,11 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-white border-r">
-      <div className="flex h-16 items-center gap-2 px-6 border-b">
-        <Package className="h-6 w-6 text-blue-600" />
-        <span className="text-lg font-semibold">CourierTrack</span>
-      </div>
+    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-gradient-to-b from-blue-900 to-blue-950">
+      <Link href="/" className="flex h-16 items-center gap-2 px-6 border-b border-white/10 hover:bg-white/5 transition-colors">
+        <Package className="h-6 w-6 text-blue-300" />
+        <span className="text-lg font-semibold text-white">CourierTrack</span>
+      </Link>
       <nav className="flex-1 space-y-1 px-3 py-4">
         {filteredItems.map((item) => {
           const Icon = iconMap[item.icon];
@@ -67,8 +67,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-white/15 text-white"
+                  : "text-blue-100 hover:bg-white/10 hover:text-white"
               )}
             >
               {Icon && <Icon className="h-5 w-5" />}
