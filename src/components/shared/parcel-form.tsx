@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { extractApiErrors } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -181,7 +182,7 @@ export function ParcelForm({ initialData, userRole, userClientId }: ParcelFormPr
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.details ? JSON.stringify(err.details.fieldErrors) : err.error || "Eroare la salvare");
+        throw new Error(extractApiErrors(err));
       }
 
       router.push("/dashboard/colete");

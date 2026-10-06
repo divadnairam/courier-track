@@ -9,7 +9,7 @@ import { UpdateStatusForm } from "@/components/shared/update-status-form";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Printer } from "lucide-react";
+import { Printer, Pencil } from "lucide-react";
 
 export default async function ColetDetailPage({
   params,
@@ -36,6 +36,18 @@ export default async function ColetDetailPage({
 
   const canUpdateStatus = ["ADMIN", "OPERATOR", "COURIER"].includes(session?.user?.role || "");
 
+  // Check if user can edit (ADMIN, OPERATOR, or CLIENT who owns the parcel)
+  let canEdit = ["ADMIN", "OPERATOR"].includes(session?.user?.role || "");
+  if (session?.user?.role === "CLIENT") {
+    const client = await prisma.client.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true },
+    });
+    if (client && parcel.sender.id === client.id) {
+      canEdit = true;
+    }
+  }
+
   return (
     <div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -43,13 +55,24 @@ export default async function ColetDetailPage({
           <h1 className="text-2xl font-bold tracking-tight">Colet {parcel.awb}</h1>
           <p className="text-sm text-gray-500">{parcel.pickupCity} → {parcel.deliveryCity}</p>
         </div>
-        <Link
-          href={`/dashboard/colete/${parcel.id}/eticheta`}
-          className="inline-flex items-center justify-center rounded-lg h-8 gap-1.5 px-3 bg-primary text-primary-foreground hover:bg-primary/80 text-sm font-medium"
-        >
-          <Printer className="h-4 w-4" />
-          Printează Eticheta
-        </Link>
+        <div className="flex gap-2">
+          {canEdit && (
+            <Link
+              href={`/dashboard/colete/${parcel.id}/editare`}
+              className="inline-flex items-center justify-center rounded-lg h-8 gap-1.5 px-3 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-sm font-medium"
+            >
+              <Pencil className="h-4 w-4" />
+              Editează
+            </Link>
+          )}
+          <Link
+            href={`/dashboard/colete/${parcel.id}/eticheta`}
+            className="inline-flex items-center justify-center rounded-lg h-8 gap-1.5 px-3 bg-primary text-primary-foreground hover:bg-primary/80 text-sm font-medium"
+          >
+            <Printer className="h-4 w-4" />
+            Printează Eticheta
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -7,6 +7,7 @@ const roleRoutes: Record<string, string[]> = {
   "/dashboard/rapoarte": ["ADMIN", "OPERATOR"],
   "/dashboard/clienti": ["ADMIN", "OPERATOR"],
   "/dashboard/colete/nou": ["ADMIN", "OPERATOR", "CLIENT"],
+  "/dashboard/curse-recurente": ["ADMIN", "OPERATOR"],
   "/dashboard/curse/noua": ["ADMIN", "OPERATOR"],
   "/dashboard": ["ADMIN", "OPERATOR", "COURIER", "CLIENT"],
 };

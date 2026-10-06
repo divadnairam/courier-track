@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { extractApiErrors } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -38,7 +39,7 @@ export function UserFormDialog() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Eroare la salvare");
+        throw new Error(extractApiErrors(err));
       }
 
       setOpen(false);

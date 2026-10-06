@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { tripSchema } from "@/lib/validators";
+import { toUTCMidnight } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -59,12 +60,31 @@ export async function POST(req: NextRequest) {
   }
 
   const { departureDate, estimatedArrival, ...rest } = result.data;
+  // Auto-set availableSeats to totalSeats when creating a new trip
+  if (!rest.availableSeats && rest.totalSeats) {
+    rest.availableSeats = rest.totalSeats;
+  }
+  const stops = body.stops as { city: string; country: string; order: number; price: number }[] | undefined;
+
   const trip = await prisma.trip.create({
     data: {
       ...rest,
-      departureDate: new Date(departureDate),
-      estimatedArrival: estimatedArrival ? new Date(estimatedArrival) : null,
+      departureDate: toUTCMidnight(departureDate),
+      estimatedArrival: estimatedArrival ? toUTCMidnight(estimatedArrival) : null,
+      ...(stops && stops.length > 0
+        ? {
+            stops: {
+              create: stops.map((s) => ({
+                city: s.city,
+                country: s.country || "RO",
+                order: s.order,
+                price: Number(s.price) || 0,
+              })),
+            },
+          }
+        : {}),
     },
+    include: { stops: { orderBy: { order: "asc" } } },
   });
 
   return NextResponse.json(trip, { status: 201 });

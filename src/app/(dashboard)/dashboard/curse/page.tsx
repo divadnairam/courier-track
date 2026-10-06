@@ -26,6 +26,39 @@ export default async function CursePage({
   const page = parseInt(params.page || "1");
   const limit = 20;
 
+  // Auto-transition: PROGRAMAT trips whose departure time has passed → IN_DESFASURARE
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const currentTime = now.toTimeString().slice(0, 5);
+
+  await Promise.all([
+    // PROGRAMAT → IN_DESFASURARE when departure time has passed
+    prisma.trip.updateMany({
+      where: {
+        status: "PROGRAMAT",
+        OR: [
+          { departureDate: { lt: todayStart } },
+          {
+            AND: [
+              { departureDate: { gte: todayStart, lt: new Date(todayStart.getTime() + 86400000) } },
+              { departureTime: { lte: currentTime } },
+            ],
+          },
+        ],
+      },
+      data: { status: "IN_DESFASURARE" },
+    }),
+    // IN_DESFASURARE → FINALIZAT when estimated arrival has passed
+    prisma.trip.updateMany({
+      where: {
+        status: "IN_DESFASURARE",
+        estimatedArrival: { lte: now },
+      },
+      data: { status: "FINALIZAT" },
+    }),
+  ]);
+
   const where: Record<string, unknown> = {};
   if (status) where.status = status;
   if (session?.user.role === "COURIER") {

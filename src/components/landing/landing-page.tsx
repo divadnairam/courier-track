@@ -50,9 +50,9 @@ export function LandingPage() {
               <a href="#servicii" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
                 Servicii
               </a>
-              <a href="#transport" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/transport" className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors">
                 Transport Persoane
-              </a>
+              </Link>
               <a href="#despre" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
                 Despre Noi
               </a>
@@ -110,9 +110,9 @@ export function LandingPage() {
             <a href="#servicii" onClick={() => setMenuOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2">
               Servicii
             </a>
-            <a href="#transport" onClick={() => setMenuOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2">
+            <Link href="/transport" onClick={() => setMenuOpen(false)} className="block text-sm font-medium text-green-600 hover:text-green-700 py-2">
               Transport Persoane
-            </a>
+            </Link>
             <a href="#despre" onClick={() => setMenuOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-blue-600 py-2">
               Despre Noi
             </a>
@@ -235,12 +235,12 @@ export function LandingPage() {
             <p className="text-sm text-gray-500 mb-3">
               Curse regulate România — Europa. Călătorește confortabil și sigur.
             </p>
-            <a
-              href="#transport"
+            <Link
+              href="/transport"
               className="text-sm font-medium text-green-600 flex items-center gap-1 hover:gap-2 transition-all"
             >
-              Vezi cursele <ChevronRight className="h-4 w-4" />
-            </a>
+              Caută curse <ChevronRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>

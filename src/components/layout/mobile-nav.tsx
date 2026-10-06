@@ -15,6 +15,7 @@ import {
   Archive,
   Radio,
   UserCircle,
+  Repeat,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -28,6 +29,7 @@ const iconMap: Record<string, React.ElementType> = {
   Archive,
   Radio,
   UserCircle,
+  Repeat,
 };
 
 const navItems = [
@@ -35,6 +37,7 @@ const navItems = [
   { href: "/dashboard/colete", label: "Colete", icon: "Package", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
   { href: "/dashboard/arhiva", label: "Arhivă", icon: "Archive", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
   { href: "/dashboard/curse", label: "Curse", icon: "Truck", roles: ["ADMIN", "OPERATOR", "COURIER"] },
+  { href: "/dashboard/curse-recurente", label: "Curse Recurente", icon: "Repeat", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/live-tracking", label: "Tracking Live", icon: "Radio", roles: ["ADMIN", "OPERATOR", "COURIER"] },
   { href: "/dashboard/clienti", label: "Clienți", icon: "Users", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/rapoarte", label: "Rapoarte", icon: "BarChart3", roles: ["ADMIN", "OPERATOR"] },

@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { tripSchema } from "@/lib/validators";
+import { VALID_TRIP_TRANSITIONS, TRIP_STATUS_LABELS, type TripStatus } from "@/lib/constants";
+import { sendBookingNotification } from "@/lib/email";
+import { toUTCMidnight } from "@/lib/utils";
 
 export async function GET(
   req: NextRequest,
@@ -25,6 +28,7 @@ export async function GET(
         },
       },
       passengers: { orderBy: { createdAt: "desc" } },
+      stops: { orderBy: { order: "asc" } },
     },
   });
 
@@ -49,10 +53,55 @@ export async function PUT(
 
   // Handle status-only update
   if (body.status && Object.keys(body).length === 1) {
+    const currentTrip = await prisma.trip.findUnique({ where: { id } });
+    if (!currentTrip) {
+      return NextResponse.json({ error: "Cursă negăsită" }, { status: 404 });
+    }
+
+    const currentStatus = currentTrip.status as TripStatus;
+    const newStatus = body.status as TripStatus;
+    const allowed = VALID_TRIP_TRANSITIONS[currentStatus] || [];
+
+    if (!allowed.includes(newStatus)) {
+      return NextResponse.json(
+        {
+          error: `Tranziția de la "${TRIP_STATUS_LABELS[currentStatus]}" la "${TRIP_STATUS_LABELS[newStatus]}" nu este permisă. Tranziții valide: ${allowed.length > 0 ? allowed.map((s) => TRIP_STATUS_LABELS[s]).join(", ") : "niciuna"}`,
+        },
+        { status: 400 }
+      );
+    }
+
     const trip = await prisma.trip.update({
       where: { id },
-      data: { status: body.status },
+      data: { status: newStatus },
     });
+
+    // Notify all confirmed passengers with email
+    const passengers = await prisma.passenger.findMany({
+      where: { tripId: id, status: "CONFIRMATA", email: { not: null } },
+    });
+
+    Promise.allSettled(
+      passengers.map((p) =>
+        sendBookingNotification("trip_update", {
+          bookingRef: p.bookingRef!,
+          passengerName: p.name,
+          passengerEmail: p.email,
+          passengerPhone: p.phone,
+          seatCount: p.seatCount,
+          price: p.price,
+          originCity: trip.originCity,
+          originCountry: trip.originCountry,
+          destinationCity: trip.destinationCity,
+          destinationCountry: trip.destinationCountry,
+          departureDate: trip.departureDate.toISOString(),
+          departureTime: trip.departureTime,
+          route: trip.route,
+          tripStatus: newStatus,
+        })
+      )
+    ).catch(() => {});
+
     return NextResponse.json(trip);
   }
 
@@ -65,16 +114,46 @@ export async function PUT(
   }
 
   const { departureDate, estimatedArrival, ...rest } = result.data;
-  const trip = await prisma.trip.update({
-    where: { id },
-    data: {
-      ...rest,
-      departureDate: new Date(departureDate),
-      estimatedArrival: estimatedArrival ? new Date(estimatedArrival) : null,
-    },
+  const stops = body.stops as { city: string; country: string; order: number; price: number }[] | undefined;
+
+  const trip = await prisma.$transaction(async (tx) => {
+    const updated = await tx.trip.update({
+      where: { id },
+      data: {
+        ...rest,
+        departureDate: toUTCMidnight(departureDate),
+        estimatedArrival: estimatedArrival ? toUTCMidnight(estimatedArrival) : null,
+      },
+    });
+
+    if (stops !== undefined) {
+      // Delete old stops that have no passengers linked
+      await tx.tripStop.deleteMany({
+        where: { tripId: id, passengers: { none: {} } },
+      });
+      // Upsert or create stops
+      for (const s of stops) {
+        await tx.tripStop.create({
+          data: {
+            tripId: id,
+            city: s.city,
+            country: s.country || "RO",
+            order: s.order,
+            price: Number(s.price) || 0,
+          },
+        });
+      }
+    }
+
+    return updated;
   });
 
-  return NextResponse.json(trip);
+  const tripWithStops = await prisma.trip.findUnique({
+    where: { id },
+    include: { stops: { orderBy: { order: "asc" } } },
+  });
+
+  return NextResponse.json(tripWithStops);
 }
 
 export async function DELETE(

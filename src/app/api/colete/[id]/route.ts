@@ -39,11 +39,31 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "OPERATOR"].includes(session.user.role)) {
+  if (!session) {
     return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
   }
 
   const { id } = await params;
+
+  // CLIENT users can only edit their own parcels
+  if (session.user.role === "CLIENT") {
+    const client = await prisma.client.findUnique({
+      where: { userId: session.user.id },
+    });
+    if (!client) {
+      return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
+    }
+    const parcel = await prisma.parcel.findUnique({
+      where: { id },
+      select: { senderId: true },
+    });
+    if (!parcel || parcel.senderId !== client.id) {
+      return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
+    }
+  } else if (!["ADMIN", "OPERATOR"].includes(session.user.role)) {
+    return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
+  }
+
   const body = await req.json();
   const result = parcelSchema.safeParse(body);
 

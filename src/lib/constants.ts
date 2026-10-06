@@ -68,6 +68,12 @@ export const TRIP_STATUS_COLORS: Record<TripStatus, string> = {
   FINALIZAT: "bg-green-100 text-green-800",
 };
 
+export const VALID_TRIP_TRANSITIONS: Record<TripStatus, TripStatus[]> = {
+  PROGRAMAT: ["IN_DESFASURARE"],
+  IN_DESFASURARE: ["FINALIZAT"],
+  FINALIZAT: [],
+};
+
 export const CLIENT_TYPES = {
   INDIVIDUAL: "INDIVIDUAL",
   COMPANY: "COMPANY",
@@ -117,9 +123,30 @@ export function getPriceForWeight(weightKg: number): number | null {
   return range ? range.priceEur : null;
 }
 
+export const BOOKING_STATUSES = {
+  CONFIRMATA: "CONFIRMATA",
+  ANULATA: "ANULATA",
+} as const;
+
+export type BookingStatus = (typeof BOOKING_STATUSES)[keyof typeof BOOKING_STATUSES];
+
+export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
+  CONFIRMATA: "Confirmată",
+  ANULATA: "Anulată",
+};
+
+export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
+  CONFIRMATA: "bg-green-100 text-green-800",
+  ANULATA: "bg-red-100 text-red-800",
+};
+
 export const COUNTRY_LABELS: Record<string, string> = Object.fromEntries(
   COUNTRIES.map((c) => [c.code, c.label])
 );
+
+export const DAYS_OF_WEEK = [
+  "Duminică", "Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă",
+] as const;
 
 export const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard" },

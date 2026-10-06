@@ -18,8 +18,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  assignedTrips Trip[]                @relation("TripDriver")
-  statusUpdates ParcelStatusHistory[]
+  assignedTrips   Trip[]                @relation("TripDriver")
+  recurringTrips  RecurringTrip[]       @relation("RecurringTripDriver")
+  statusUpdates   ParcelStatusHistory[]
 }
 
 model Client {
@@ -101,8 +102,11 @@ model Trip {
   estimatedArrival DateTime?
   totalSeats      Int       @default(0)
   availableSeats  Int       @default(0)
-  driverId        String?
-  driver          User?     @relation("TripDriver", fields: [driverId], references: [id])
+  pricePerSeat    Float     @default(0)
+  driverId          String?
+  driver            User?     @relation("TripDriver", fields: [driverId], references: [id])
+  recurringTripId   String?
+  recurringTrip     RecurringTrip? @relation(fields: [recurringTripId], references: [id])
   vehicleInfo     String?
   notes           String?
   createdAt       DateTime  @default(now())
@@ -110,7 +114,9 @@ model Trip {
 
   parcels         Parcel[]
   passengers      Passenger[]
+  stops           TripStop[]
   courierLocation CourierLocation?
+  locationHistory CourierLocationHistory[]
 }
 
 model CourierLocation {
@@ -127,13 +133,83 @@ model CourierLocation {
 }
 
 model Passenger {
+  id           String   @id @default(cuid())
+  tripId       String
+  trip         Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String
+  email        String?
+  seatCount    Int      @default(1)
+  notes        String?
+  price        Float    @default(0)
+  parcelCount      Int      @default(0)  // 0-2 colete
+  parcelWeight     Float    @default(0)  // greutate totală în kg (max 40)
+  destinationCity  String?
+  destinationCountry String?
+  tripStopId       String?
+  tripStop         TripStop? @relation(fields: [tripStopId], references: [id])
+  bookingRef       String?  @unique
+  status           String   @default("CONFIRMATA") // CONFIRMATA | ANULATA
+  createdAt        DateTime @default(now())
+}
+
+model TripStop {
+  id        String  @id @default(cuid())
+  tripId    String
+  trip      Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  city      String
+  country   String  @default("RO")
+  order     Int
+  price     Float   @default(0)
+
+  passengers Passenger[]
+
+  @@index([tripId])
+}
+
+model RouteTemplate {
+  id        String   @id @default(cuid())
+  name      String   // "Galați - Amsterdam"
+  stops     Json     // [{city: "Galați", country: "RO"}, {city: "București", country: "RO"}, ...]
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RecurringTrip {
+  id                  String    @id @default(cuid())
+  dayOfWeek           Int       @default(3)  // 0=Duminică, 3=Miercuri
+  originCity          String    @default("Galați")
+  originCountry       String    @default("RO")
+  destinationCity     String
+  destinationCountry  String    @default("NL")
+  route               String?
+  departureTime       String    // "08:00"
+  estimatedArrivalDays Int?     // +N zile până la sosire
+  totalSeats          Int       @default(12)
+  pricePerSeat        Float     @default(0)
+  stops               Json?     // [{city, country, order, price}]
+  driverId            String?
+  driver              User?     @relation("RecurringTripDriver", fields: [driverId], references: [id])
+  vehicleInfo         String?
+  notes               String?
+  active              Boolean   @default(true)
+  weeksInAdvance      Int       @default(4)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  generatedTrips      Trip[]
+}
+
+model CourierLocationHistory {
   id        String   @id @default(cuid())
   tripId    String
   trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  name      String
-  phone     String
-  seatCount Int      @default(1)
-  notes     String?
-  price     Float    @default(0)
-  createdAt DateTime @default(now())
+  latitude  Float
+  longitude Float
+  speed     Float?
+  heading   Float?
+  timestamp DateTime @default(now())
+
+  @@index([tripId, timestamp])
 }
