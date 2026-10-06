@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     parcelFilter = { trip: { driverId: session?.user?.id } };
   }
 
-  const [totalParcels, deliveriesToday, activeTrips, monthlyRevenue, recentParcels] =
+  const [totalParcels, deliveriesToday, activeTrips, monthlyParcelRevenue, monthlyPassengerRevenue, recentParcels] =
     await Promise.all([
       prisma.parcel.count({ where: parcelFilter }),
       prisma.parcel.count({
@@ -58,6 +58,10 @@ export default async function DashboardPage() {
         _sum: { price: true },
         where: { ...parcelFilter, createdAt: { gte: startOfMonth } },
       }),
+      prisma.passenger.aggregate({
+        _sum: { price: true },
+        where: { createdAt: { gte: startOfMonth }, status: "CONFIRMATA" },
+      }),
       prisma.parcel.findMany({
         where: parcelFilter,
         take: 5,
@@ -68,6 +72,8 @@ export default async function DashboardPage() {
         },
       }),
     ]);
+
+  const totalMonthlyRevenue = (monthlyParcelRevenue._sum.price || 0) + (monthlyPassengerRevenue._sum.price || 0);
 
   return (
     <div>
@@ -100,7 +106,7 @@ export default async function DashboardPage() {
         {(role === "ADMIN" || role === "OPERATOR") && (
           <StatCard
             title="Venituri Luna"
-            value={formatCurrency(monthlyRevenue._sum.price || 0)}
+            value={formatCurrency(totalMonthlyRevenue)}
             description="Venituri luna curentă"
             icon={<DollarSign className="h-4 w-4 text-yellow-600" />}
           />
