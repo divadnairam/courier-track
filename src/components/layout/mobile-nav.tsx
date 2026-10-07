@@ -16,9 +16,11 @@ import {
   Radio,
   UserCircle,
   Repeat,
+  Shield,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
+  Shield,
   LayoutDashboard,
   Package,
   Truck,
@@ -43,6 +45,7 @@ const navItems = [
   { href: "/dashboard/rapoarte", label: "Rapoarte", icon: "BarChart3", roles: ["ADMIN", "OPERATOR"] },
   { href: "/dashboard/tracking", label: "Urmărire AWB", icon: "Search", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
   { href: "/dashboard/profil", label: "Profilul Meu", icon: "UserCircle", roles: ["CLIENT"] },
+  { href: "/dashboard/profil/confidentialitate", label: "Confidențialitate", icon: "Shield", roles: ["ADMIN", "OPERATOR", "COURIER", "CLIENT"] },
   { href: "/dashboard/setari/utilizatori", label: "Utilizatori", icon: "Settings", roles: ["ADMIN"] },
 ];
 

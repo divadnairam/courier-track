@@ -31,12 +31,20 @@ export async function GET(
     return NextResponse.json({ error: "Rezervarea nu a fost găsită" }, { status: 404 });
   }
 
+  // Mask PII for privacy — booking ref acts as access token but we still minimize exposure
+  const maskedPhone = passenger.phone
+    ? passenger.phone.slice(0, -4).replace(/\d/g, "*") + passenger.phone.slice(-4)
+    : null;
+  const maskedEmail = passenger.email
+    ? passenger.email.replace(/^(.{2})(.*)(@.*)$/, "$1***$3")
+    : null;
+
   return NextResponse.json({
     bookingRef: passenger.bookingRef,
     status: passenger.status,
     name: passenger.name,
-    phone: passenger.phone,
-    email: passenger.email,
+    phone: maskedPhone,
+    email: maskedEmail,
     seatCount: passenger.seatCount,
     price: passenger.price,
     parcelCount: passenger.parcelCount,

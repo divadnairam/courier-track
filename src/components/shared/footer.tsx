@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-4 gap-8">
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="bg-blue-600 rounded-lg p-1.5">
@@ -27,6 +27,14 @@ export function Footer() {
               <li><Link href="/login" className="hover:text-white transition-colors">Autentificare</Link></li>
               <li><Link href="/#servicii" className="hover:text-white transition-colors">Servicii</Link></li>
               <li><Link href="/#contact" className="hover:text-white transition-colors">Contact</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3 text-white">Legal</h4>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li><Link href="/politica-confidentialitate" className="hover:text-white transition-colors">Politica de Confidențialitate</Link></li>
+              <li><Link href="/termeni" className="hover:text-white transition-colors">Termeni și Condiții</Link></li>
             </ul>
           </div>
 

@@ -136,6 +136,27 @@ export default function RegisterPage() {
                   minLength={6}
                 />
               </div>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="gdprConsent"
+                  name="gdprConsent"
+                  required
+                  className="mt-1 h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="gdprConsent" className="text-xs text-gray-500">
+                  Am citit și sunt de acord cu{" "}
+                  <Link href="/politica-confidentialitate" target="_blank" className="text-blue-600 hover:underline">
+                    Politica de Confidențialitate
+                  </Link>{" "}
+                  și{" "}
+                  <Link href="/termeni" target="_blank" className="text-blue-600 hover:underline">
+                    Termenii și Condițiile
+                  </Link>.
+                  Înțeleg că datele mele personale vor fi prelucrate conform GDPR.
+                </label>
+              </div>
+
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Se creează contul..." : "Continuă"}
               </Button>

@@ -301,6 +301,26 @@ function BookingFormContent({ params }: { params: Promise<{ tripId: string }> })
                 );
               })()}
 
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="gdprConsent"
+                  required
+                  className="mt-1 h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="gdprConsent" className="text-xs text-gray-500">
+                  Sunt de acord cu{" "}
+                  <Link href="/politica-confidentialitate" target="_blank" className="text-blue-600 hover:underline">
+                    Politica de Confidențialitate
+                  </Link>{" "}
+                  și{" "}
+                  <Link href="/termeni" target="_blank" className="text-blue-600 hover:underline">
+                    Termenii și Condițiile
+                  </Link>.
+                  Datele introduse vor fi folosite exclusiv pentru procesarea rezervării.
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={submitting}

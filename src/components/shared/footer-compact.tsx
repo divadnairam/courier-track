@@ -13,6 +13,8 @@ export function FooterCompact() {
           <Link href="/tracking" className="hover:text-white transition-colors">Urmărire Colet</Link>
           <Link href="/#servicii" className="hover:text-white transition-colors">Servicii</Link>
           <Link href="/#contact" className="hover:text-white transition-colors">Contact</Link>
+          <Link href="/politica-confidentialitate" className="hover:text-white transition-colors">Confidențialitate</Link>
+          <Link href="/termeni" className="hover:text-white transition-colors">Termeni</Link>
         </div>
         <span className="text-blue-300 text-xs">
           © {new Date().getFullYear()} Realizat de LunamerMMG
