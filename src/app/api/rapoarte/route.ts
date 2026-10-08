@@ -17,13 +17,14 @@ export async function GET(req: NextRequest) {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const [totalParcels, deliveredParcels, deliveriesToday, activeTrips, monthlyRevenue, totalClients] =
+    const [totalParcels, deliveredParcels, deliveriesToday, activeTrips, monthlyParcelRevenue, monthlyPassengerRevenue, totalClients] =
       await Promise.all([
         prisma.parcel.count(),
         prisma.parcel.count({ where: { status: "LIVRAT" } }),
         prisma.parcel.count({ where: { status: "LIVRAT", updatedAt: { gte: startOfDay } } }),
         prisma.trip.count({ where: { status: { in: ["PROGRAMAT", "IN_DESFASURARE"] } } }),
         prisma.parcel.aggregate({ _sum: { price: true }, where: { createdAt: { gte: startOfMonth } } }),
+        prisma.passenger.aggregate({ _sum: { price: true }, where: { createdAt: { gte: startOfMonth }, status: "CONFIRMATA" } }),
         prisma.client.count(),
       ]);
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
       deliveredParcels,
       deliveriesToday,
       activeTrips,
-      monthlyRevenue: monthlyRevenue._sum.price || 0,
+      monthlyRevenue: (monthlyParcelRevenue._sum.price || 0) + (monthlyPassengerRevenue._sum.price || 0),
       totalClients,
     });
   }
@@ -73,24 +74,37 @@ export async function GET(req: NextRequest) {
   }
 
   if (type === "revenue") {
-    // Last 12 months revenue
-    const data: { month: string; revenue: number; count: number }[] = [];
+    // Last 12 months revenue — parcels + passengers
+    const data: { month: string; parcelRevenue: number; passengerRevenue: number; revenue: number; parcelCount: number; passengerCount: number }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const start = new Date(d.getFullYear(), d.getMonth(), 1);
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
 
-      const result = await prisma.parcel.aggregate({
-        _sum: { price: true },
-        _count: true,
-        where: { createdAt: { gte: start, lt: end } },
-      });
+      const [parcelResult, passengerResult] = await Promise.all([
+        prisma.parcel.aggregate({
+          _sum: { price: true },
+          _count: true,
+          where: { createdAt: { gte: start, lt: end } },
+        }),
+        prisma.passenger.aggregate({
+          _sum: { price: true },
+          _count: true,
+          where: { createdAt: { gte: start, lt: end }, status: "CONFIRMATA" },
+        }),
+      ]);
+
+      const parcelRev = parcelResult._sum.price || 0;
+      const passengerRev = passengerResult._sum.price || 0;
 
       data.push({
         month: start.toLocaleDateString("ro-RO", { month: "short", year: "numeric" }),
-        revenue: result._sum.price || 0,
-        count: result._count,
+        parcelRevenue: parcelRev,
+        passengerRevenue: passengerRev,
+        revenue: parcelRev + passengerRev,
+        parcelCount: parcelResult._count,
+        passengerCount: passengerResult._count,
       });
     }
 
