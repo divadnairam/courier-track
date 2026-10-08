@@ -140,5 +140,55 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data);
   }
 
+  if (type === "transport") {
+    // Last 12 months passenger transport stats
+    const data: {
+      month: string;
+      passengers: number;
+      cancelled: number;
+      revenue: number;
+      trips: number;
+      parcels: number;
+    }[] = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const start = new Date(d.getFullYear(), d.getMonth(), 1);
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+
+      const [confirmed, cancelled, revenue, trips, parcels] = await Promise.all([
+        prisma.passenger.count({
+          where: { createdAt: { gte: start, lt: end }, status: "CONFIRMATA" },
+        }),
+        prisma.passenger.count({
+          where: { createdAt: { gte: start, lt: end }, status: "ANULATA" },
+        }),
+        prisma.passenger.aggregate({
+          _sum: { price: true },
+          where: { createdAt: { gte: start, lt: end }, status: "CONFIRMATA" },
+        }),
+        prisma.trip.count({
+          where: { departureDate: { gte: start, lt: end } },
+        }),
+        prisma.passenger.aggregate({
+          _sum: { parcelCount: true },
+          where: { createdAt: { gte: start, lt: end }, status: "CONFIRMATA" },
+        }),
+      ]);
+
+      data.push({
+        month: start.toLocaleDateString("ro-RO", { month: "short", year: "numeric" }),
+        passengers: confirmed,
+        cancelled,
+        revenue: revenue._sum.price || 0,
+        trips,
+        parcels: parcels._sum.parcelCount || 0,
+      });
+    }
+
+    return NextResponse.json(data);
+  }
+
   return NextResponse.json({ error: "Tip raport invalid" }, { status: 400 });
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, DollarSign, Users } from "lucide-react";
+import { Package, DollarSign, Users, Bus } from "lucide-react";
 
 export default function RapoartePage() {
   const reports = [
@@ -16,6 +16,12 @@ export default function RapoartePage() {
       description: "Veniturile lunare din ultimul an",
       href: "/dashboard/rapoarte/venituri",
       icon: <DollarSign className="h-6 w-6 text-green-600" />,
+    },
+    {
+      title: "Transport Persoane",
+      description: "Pasageri, venituri, curse, anulări din ultimele 12 luni",
+      href: "/dashboard/rapoarte/transport",
+      icon: <Bus className="h-6 w-6 text-orange-600" />,
     },
     {
       title: "Performanță Curieri",
