@@ -38,7 +38,7 @@ export default function LivrariPage() {
 
   return (
     <div>
-      <PageHeader title="Raport Livrări" description="Ultimele 30 de zile" />
+      <PageHeader title="Raport Livrări" description="Ultimele 30 de zile" backHref="/dashboard/rapoarte" />
 
       <div className="grid gap-4 sm:grid-cols-2 mb-6">
         <Card>

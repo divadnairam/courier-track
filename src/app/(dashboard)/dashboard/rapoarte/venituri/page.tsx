@@ -47,7 +47,7 @@ export default function VenituriPage() {
 
   return (
     <div>
-      <PageHeader title="Raport Venituri" description="Ultimele 12 luni" />
+      <PageHeader title="Raport Venituri" description="Ultimele 12 luni" backHref="/dashboard/rapoarte" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>

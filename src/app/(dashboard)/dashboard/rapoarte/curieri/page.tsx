@@ -34,7 +34,7 @@ export default function CurieriPage() {
 
   return (
     <div>
-      <PageHeader title="Performanță Curieri" description="Statistici per curier" />
+      <PageHeader title="Performanță Curieri" description="Statistici per curier" backHref="/dashboard/rapoarte" />
 
       <Card>
         <CardHeader>
