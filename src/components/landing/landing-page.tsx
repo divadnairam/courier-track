@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { CookieSettingsButton } from "@/components/shared/cookie-settings-button";
 import {
   Package,
   Search,
@@ -473,6 +474,11 @@ export function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mb-3">
+              <Link href="/politica-confidentialitate" className="hover:text-white transition-colors">Politica de Confidențialitate</Link>
+              <Link href="/termeni" className="hover:text-white transition-colors">Termeni și Condiții</Link>
+              <CookieSettingsButton className="hover:text-white transition-colors" />
+            </div>
             © {new Date().getFullYear()} CourierTrack. Realizat de LunamerMMG. Toate drepturile rezervate.
           </div>
         </div>

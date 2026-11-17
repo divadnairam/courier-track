@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Package } from "lucide-react";
+import { CookieSettingsButton } from "./cookie-settings-button";
 
 export function FooterCompact() {
   return (
@@ -15,6 +16,7 @@ export function FooterCompact() {
           <Link href="/#contact" className="hover:text-white transition-colors">Contact</Link>
           <Link href="/politica-confidentialitate" className="hover:text-white transition-colors">Confidențialitate</Link>
           <Link href="/termeni" className="hover:text-white transition-colors">Termeni</Link>
+          <CookieSettingsButton className="hover:text-white transition-colors" />
         </div>
         <span className="text-blue-300 text-xs">
           © {new Date().getFullYear()} Realizat de LunamerMMG

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Package, Phone, Mail } from "lucide-react";
+import { CookieSettingsButton } from "./cookie-settings-button";
 
 export function Footer() {
   return (
@@ -35,6 +36,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/politica-confidentialitate" className="hover:text-white transition-colors">Politica de Confidențialitate</Link></li>
               <li><Link href="/termeni" className="hover:text-white transition-colors">Termeni și Condiții</Link></li>
+              <li><CookieSettingsButton className="hover:text-white transition-colors" /></li>
             </ul>
           </div>
 
