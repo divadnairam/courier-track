@@ -465,7 +465,7 @@ export function LandingPage() {
             <div>
               <h4 className="font-semibold mb-3">Destinații Populare</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>România — Olanda</li>
+                <li><Link href="/transport-olanda" className="hover:text-white transition-colors">România — Olanda</Link></li>
                 <li>România — Germania</li>
                 <li>România — Anglia</li>
                 <li>România — Italia</li>

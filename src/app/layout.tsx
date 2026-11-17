@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { CookieConsentWrapper } from "@/components/shared/cookie-consent-wrapper";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CourierTrack - Gestionare Colete & Transport",
-  description: "Aplicație de urmărire colete și gestionare transport",
+  metadataBase: new URL(SITE_URL),
+  title: "CourierTrack — Transport Colete și Persoane România – Europa",
+  description:
+    "Transport colete și persoane din România spre Olanda, Germania, Anglia și Italia. Plecări săptămânale din Galați și urmărire online a coletului.",
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: "ro_RO",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
