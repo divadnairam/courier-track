@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, AlertCircle } from "lucide-react";
+import { ResendVerificationButton } from "@/components/shared/resend-verification-button";
 
 export default async function ClientDetailPage({
   params,
@@ -45,6 +47,26 @@ export default async function ClientDetailPage({
         title={client.name}
         description={client.companyName || `Client ${client.type === "COMPANY" ? "companie" : "persoană fizică"}`}
       />
+
+      {client.email && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border bg-white px-4 py-3">
+          <span className="text-sm text-gray-500">Email: <strong>{client.email}</strong></span>
+          {client.emailVerified ? (
+            <span className="inline-flex items-center gap-1 text-sm text-green-600">
+              <CheckCircle2 className="h-4 w-4" />
+              Verificat
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-3">
+              <span className="inline-flex items-center gap-1 text-sm text-amber-600">
+                <AlertCircle className="h-4 w-4" />
+                Neverificat
+              </span>
+              <ResendVerificationButton clientId={client.id} />
+            </span>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="detalii">
         <TabsList>

@@ -16,6 +16,15 @@ const transporter = nodemailer.createTransport({
 
 const FROM_ADDRESS = process.env.SMTP_FROM || "noreply@couriertrack.ro";
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 interface ParcelEmailData {
   awb: string;
   status: string;
@@ -240,6 +249,203 @@ export async function sendBookingNotification(type: BookingNotificationType, dat
   } catch (error) {
     console.error(`[Email] Eroare trimitere ${type} către ${data.passengerEmail}:`, error);
   }
+}
+
+// --- Shipment Notification (TNT-style) ---
+
+interface ShipmentNotificationData {
+  to: string;
+  awb: string;
+  senderName: string;
+  receiverName: string;
+  pickupCity: string;
+  pickupCountry: string;
+  deliveryCity: string;
+  deliveryCountry: string;
+  pickupAddress: string;
+  deliveryAddress: string;
+  weight?: number | null;
+  content?: string | null;
+  senderPhone?: string | null;
+  receiverPhone?: string | null;
+  trackingUrl: string;
+  notificationUrl: string;
+}
+
+function buildShipmentNotificationHtml(raw: ShipmentNotificationData): string {
+  const data = Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k, typeof v === "string" ? escapeHtml(v) : v])
+  ) as unknown as ShipmentNotificationData;
+  const originCountry = COUNTRY_LABELS[data.pickupCountry] || data.pickupCountry;
+  const destCountry = COUNTRY_LABELS[data.deliveryCountry] || data.deliveryCountry;
+
+  return `
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; color: #333; background: #f3f4f6;">
+  <!-- Header -->
+  <div style="background: #1e40af; color: white; padding: 20px 24px;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="vertical-align: top;">
+          <p style="margin: 0; font-size: 11px; text-transform: uppercase; opacity: 0.8;">De la:</p>
+          <p style="margin: 2px 0 0; font-weight: bold; font-size: 16px;">${data.senderName}</p>
+        </td>
+        <td style="text-align: right; vertical-align: top;">
+          <p style="margin: 0; font-weight: 600;">${data.pickupCity},</p>
+          <p style="margin: 0; font-size: 13px;">${originCountry.toUpperCase()}</p>
+        </td>
+      </tr>
+      <tr><td colspan="2" style="padding-top: 12px;"></td></tr>
+      <tr>
+        <td style="vertical-align: top;">
+          <p style="margin: 0; font-size: 11px; text-transform: uppercase; opacity: 0.8;">Livrare estimată:</p>
+          <p style="margin: 2px 0 0; font-weight: 600;">În curând</p>
+        </td>
+        <td style="text-align: right; vertical-align: top;">
+          <p style="margin: 0; font-weight: 600;">${data.deliveryCity},</p>
+          <p style="margin: 0; font-size: 13px;">${destCountry.toUpperCase()}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Main -->
+  <div style="background: white; padding: 24px;">
+    <h1 style="color: #1e40af; font-size: 22px; margin: 0 0 16px;">Coletul tău va ajunge în curând!</h1>
+    <p style="margin: 0 0 8px; line-height: 1.6;">
+      Vești bune! <strong>${data.senderName}</strong> a expediat un colet pentru tine.
+      Coletul va fi livrat la adresa indicată.
+    </p>
+    <p style="margin: 0 0 20px;">
+      Numărul de urmărire este <strong>${data.awb}</strong>
+    </p>
+
+    <a href="${data.trackingUrl}" style="display: block; background: #1e40af; color: white; text-align: center; padding: 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
+      Urmărește coletul
+    </a>
+  </div>
+
+  <!-- Shipment details -->
+  <div style="background: white; border-top: 1px solid #e5e7eb; padding: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 12px;">Detalii colet</h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      ${data.weight ? `<tr><td style="padding: 4px 0; color: #6b7280;"><strong>Greutate:</strong></td><td style="padding: 4px 0;">${data.weight} kg</td></tr>` : ""}
+      ${data.content ? `<tr><td style="padding: 4px 0; color: #6b7280;"><strong>Conținut:</strong></td><td style="padding: 4px 0;">${data.content}</td></tr>` : ""}
+      <tr><td style="padding: 4px 0; color: #6b7280;"><strong>Referință:</strong></td><td style="padding: 4px 0;">${data.awb}</td></tr>
+    </table>
+  </div>
+
+  <!-- Customer info -->
+  <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 12px;">Informații expediere</h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <tr>
+        <td style="vertical-align: top; width: 50%; padding-right: 12px;">
+          <p style="color: #6b7280; font-weight: 600; margin: 0 0 4px;">Expeditor:</p>
+          <p style="margin: 0;">${data.senderName}</p>
+          <p style="margin: 0; color: #6b7280;">${data.pickupAddress}</p>
+          <p style="margin: 0; color: #6b7280;">${data.pickupCity}</p>
+          <p style="margin: 0; color: #6b7280;">${originCountry}</p>
+          ${data.senderPhone ? `<p style="margin: 4px 0 0; color: #6b7280;">Tel: ${data.senderPhone}</p>` : ""}
+        </td>
+        <td style="vertical-align: top; width: 50%; padding-left: 12px;">
+          <p style="color: #6b7280; font-weight: 600; margin: 0 0 4px;">Destinatar:</p>
+          <p style="margin: 0;">${data.receiverName}</p>
+          <p style="margin: 0; color: #6b7280;">${data.deliveryAddress}</p>
+          <p style="margin: 0; color: #6b7280;">${data.deliveryCity}</p>
+          <p style="margin: 0; color: #6b7280;">${destCountry}</p>
+          ${data.receiverPhone ? `<p style="margin: 4px 0 0; color: #6b7280;">Tel: ${data.receiverPhone}</p>` : ""}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Help -->
+  <div style="background: white; border-top: 1px solid #e5e7eb; padding: 24px;">
+    <h2 style="font-size: 16px; margin: 0 0 8px;">Ai nevoie de ajutor?</h2>
+    <p style="font-size: 14px; color: #6b7280; margin: 0;">
+      Dacă ai întrebări despre coletul tău, <a href="mailto:contact@couriertrack.ro" style="color: #1e40af;">contactează-ne</a>.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="border-top: 1px solid #e5e7eb; padding: 16px 24px; text-align: center;">
+    <p style="font-size: 12px; color: #9ca3af; margin: 0 0 4px;">
+      📦 CourierTrack — Transport colete și persoane
+    </p>
+    <p style="font-size: 11px; color: #9ca3af; margin: 0;">
+      Acest email a fost generat automat. Vă rugăm să nu răspundeți la acest mesaj.
+    </p>
+  </div>
+</body>
+</html>`;
+}
+
+export async function sendShipmentNotification(data: ShipmentNotificationData): Promise<void> {
+  await transporter.sendMail({
+    from: `"CourierTrack" <${FROM_ADDRESS}>`,
+    to: data.to,
+    subject: `Coletul tău de la ${data.senderName} este pe drum — ${data.awb}`,
+    encoding: "utf-8",
+    html: buildShipmentNotificationHtml(data),
+  });
+  console.log(`[Email] Notificare expediere trimisă către ${data.to} pentru AWB ${data.awb}`);
+}
+
+// --- Email Verification ---
+
+export async function sendEmailVerification(email: string, token: string, clientName: string): Promise<void> {
+  const baseUrl = process.env.NEXTAUTH_URL || "https://aplicatie-pi.vercel.app";
+  const verifyUrl = `${baseUrl}/api/clienti/verificare-email?token=${token}`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+  <div style="background: #1e40af; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+    <h1 style="margin: 0; font-size: 24px;">CourierTrack</h1>
+    <p style="margin: 5px 0 0; opacity: 0.9;">Verificare adresă email</p>
+  </div>
+
+  <div style="border: 1px solid #e5e7eb; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <p>Bună ziua, <strong>${escapeHtml(clientName)}</strong>,</p>
+
+    <p>Pentru a confirma că această adresă de email este validă, vă rugăm să apăsați butonul de mai jos:</p>
+
+    <div style="text-align: center; margin: 24px 0;">
+      <a href="${verifyUrl}" style="display: inline-block; background: #1e40af; color: white; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: bold; font-size: 15px;">
+        Confirmă adresa de email
+      </a>
+    </div>
+
+    <p style="color: #6b7280; font-size: 13px;">
+      Dacă nu ați solicitat această verificare, puteți ignora acest email.
+    </p>
+
+    <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">
+      Sau copiați acest link în browser: <br>
+      <a href="${verifyUrl}" style="color: #2563eb; word-break: break-all;">${verifyUrl}</a>
+    </p>
+
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+    <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+      Acest email a fost trimis automat de CourierTrack. Vă rugăm să nu răspundeți la acest mesaj.
+    </p>
+  </div>
+</body>
+</html>`;
+
+  await transporter.sendMail({
+    from: `"CourierTrack" <${FROM_ADDRESS}>`,
+    to: email,
+    subject: "Confirmă adresa de email — CourierTrack",
+    encoding: "utf-8",
+    html,
+  });
+  console.log(`[Email] Verificare email trimisă către ${email}`);
 }
 
 export async function sendStatusNotification(data: ParcelEmailData): Promise<void> {

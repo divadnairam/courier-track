@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { randomBytes } from "crypto";
+import { sendEmailVerification } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -42,11 +44,15 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create a linked Client profile
+    // Create a linked Client profile with email verification
+    const verificationToken = randomBytes(32).toString("hex");
+
     await prisma.client.create({
       data: {
         name,
         email,
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
         phone: "",
         address: "",
         city: "",
@@ -55,6 +61,13 @@ export async function POST(req: Request) {
         userId: user.id,
       },
     });
+
+    // Send verification email after the response (kept alive on Vercel)
+    after(() =>
+      sendEmailVerification(email, verificationToken, name).catch((err) =>
+        console.error("[Email] Eroare trimitere verificare:", err)
+      )
+    );
 
     return NextResponse.json({ success: true });
   } catch {

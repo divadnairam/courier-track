@@ -24,21 +24,23 @@ model User {
 }
 
 model Client {
-  id          String   @id @default(cuid())
-  type        String   @default("INDIVIDUAL") // INDIVIDUAL | COMPANY
-  name        String
-  companyName String?
-  cui         String? // Company fiscal code
-  phone       String
-  email       String?
-  address     String
-  city        String
-  county      String
-  country     String   @default("RO")
-  notes       String?
-  userId      String?  @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  type                   String   @default("INDIVIDUAL") // INDIVIDUAL | COMPANY
+  name                   String
+  companyName            String?
+  cui                    String? // Company fiscal code
+  phone                  String
+  email                  String?
+  emailVerified          Boolean  @default(false)
+  emailVerificationToken String?
+  address                String
+  city                   String
+  county                 String
+  country                String   @default("RO")
+  notes                  String?
+  userId                 String?  @unique
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   sentParcels     Parcel[] @relation("Sender")
   receivedParcels Parcel[] @relation("Receiver")

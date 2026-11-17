@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Printer, Pencil } from "lucide-react";
+import { SendNotificationButton } from "@/components/shared/send-notification-button";
 
 export default async function ColetDetailPage({
   params,
@@ -64,6 +65,9 @@ export default async function ColetDetailPage({
               <Pencil className="h-4 w-4" />
               Editează
             </Link>
+          )}
+          {canUpdateStatus && parcel.receiver.email && (
+            <SendNotificationButton parcelId={parcel.id} />
           )}
           <Link
             href={`/dashboard/colete/${parcel.id}/eticheta`}

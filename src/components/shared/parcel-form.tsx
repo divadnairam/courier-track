@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { COUNTRIES, COUNTRY_LABELS, WEIGHT_PRICE_RANGES, getPriceForWeight } from "@/lib/constants";
 import { ClientForm } from "./client-form";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Phone, Mail } from "lucide-react";
 
 interface Client {
   id: string;
   name: string;
   phone: string;
+  email?: string | null;
   city: string;
   country: string;
   address: string;
@@ -218,10 +219,24 @@ export function ParcelForm({ initialData, userRole, userClientId }: ParcelFormPr
         {isClient ? (
           <div>
             <input type="hidden" name="senderId" value={senderId} />
-            <div className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
-              {clients.find((c) => c.id === userClientId)?.name || "Contul tău"}
-              <span className="text-xs text-gray-400 ml-2">(expeditor automat)</span>
-            </div>
+            {(() => {
+              const sender = clients.find((c) => c.id === userClientId);
+              return sender ? (
+                <div className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                  <p className="font-medium">{sender.name} <span className="text-xs text-gray-400 ml-1">(expeditor automat)</span></p>
+                  <div className="flex flex-wrap gap-3 mt-1 text-xs text-gray-500">
+                    {sender.phone && (
+                      <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" />{sender.phone}</span>
+                    )}
+                    {sender.email && (
+                      <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" />{sender.email}</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700">Contul tău</div>
+              );
+            })()}
           </div>
         ) : showNewSender ? (
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -249,6 +264,21 @@ export function ParcelForm({ initialData, userRole, userClientId }: ParcelFormPr
                 </option>
               ))}
             </select>
+            {senderId && (() => {
+              const sender = clients.find((c) => c.id === senderId);
+              return sender ? (
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                  {sender.phone ? (
+                    <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" />{sender.phone}</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-amber-500"><Phone className="h-3 w-3" />Lipsă telefon</span>
+                  )}
+                  {sender.email && (
+                    <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" />{sender.email}</span>
+                  )}
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
       </div>
@@ -294,6 +324,21 @@ export function ParcelForm({ initialData, userRole, userClientId }: ParcelFormPr
                 </option>
               ))}
             </select>
+            {receiverId && (() => {
+              const receiver = clients.find((c) => c.id === receiverId);
+              return receiver ? (
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+                  {receiver.phone ? (
+                    <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" />{receiver.phone}</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-amber-500"><Phone className="h-3 w-3" />Lipsă telefon</span>
+                  )}
+                  {receiver.email && (
+                    <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" />{receiver.email}</span>
+                  )}
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
       </div>

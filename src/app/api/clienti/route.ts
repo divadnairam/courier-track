@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { clientSchema } from "@/lib/validators";
+import { randomBytes } from "crypto";
+import { sendEmailVerification } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -58,6 +60,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const client = await prisma.client.create({ data: result.data });
+  const data = { ...result.data };
+
+  // Generate verification token if email is provided
+  let verificationToken: string | null = null;
+  if (data.email) {
+    verificationToken = randomBytes(32).toString("hex");
+    (data as Record<string, unknown>).emailVerificationToken = verificationToken;
+    (data as Record<string, unknown>).emailVerified = false;
+  }
+
+  const client = await prisma.client.create({ data });
+
+  // Send verification email after the response (kept alive on Vercel)
+  if (data.email && verificationToken) {
+    const { email, name } = data;
+    const token = verificationToken;
+    after(() =>
+      sendEmailVerification(email, token, name).catch((err) =>
+        console.error("[Email] Eroare trimitere verificare:", err)
+      )
+    );
+  }
+
   return NextResponse.json(client, { status: 201 });
 }

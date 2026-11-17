@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 export default async function ClientiPage({
   searchParams,
@@ -113,7 +114,16 @@ export default async function ClientiPage({
                 </TableCell>
                 <TableCell>{client.phone}</TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {client.email || "-"}
+                  {client.email ? (
+                    <span className="inline-flex items-center gap-1">
+                      {client.email}
+                      {client.emailVerified ? (
+                        <span title="Email verificat"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /></span>
+                      ) : (
+                        <span title="Email neverificat"><AlertCircle className="h-3.5 w-3.5 text-amber-500" /></span>
+                      )}
+                    </span>
+                  ) : "-"}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {client.city}, {client.country !== "RO" ? COUNTRY_LABELS[client.country] || client.country : client.county}
