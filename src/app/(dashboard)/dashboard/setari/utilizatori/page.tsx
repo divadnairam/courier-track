@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/shared/page-header";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
@@ -13,6 +14,9 @@ import {
 import { UserFormDialog } from "@/components/shared/user-form-dialog";
 
 export default async function UtilizatoriPage() {
+  // Render per request: the user list must be live, and the DB isn't available at build time
+  await connection();
+
   const users = await prisma.user.findMany({
     select: {
       id: true,
